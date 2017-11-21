@@ -1,0 +1,37 @@
+---
+title: "Examples with no database access"
+author: "Roland Stevenson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{No Database}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r }
+library(whisker)
+library(condusco)
+```
+
+
+## Simple Example
+
+This example shows how to simply swap out a value using the whisker library. A common use case is two users working on a the same logic, but wanting to keep their datasets separate.  A namespace can be provided for each user with {{table_prefix}}, and the swap can be set in a user-specific configuration file, thereby allowing users to separate the logic of the pipelines from the user-specific configuration variables.  They can commit changes to the logic in which the commits are free of their specific variables.
+```{r}
+
+run_pipeline(
+  #the pipeline
+  function(params){
+    query <- "SELECT result FROM {{table_prefix}}_results;"
+    whisker.render(query,params)
+  },
+  #the swap
+  data.frame(
+    table_prefix = c('batman', 'robin')
+  )
+)
+
+
+```
+

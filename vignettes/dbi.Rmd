@@ -1,0 +1,141 @@
+---
+title: "Examples with DBI and SQLite"
+author: "Roland Stevenson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{DBI and SQLite}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r }
+library(whisker)
+library(DBI)
+library(condusco)
+```
+
+## Simple Example
+
+Create pipelines that run dynamic queries based on results of a query.  A common use case is to dynamically query a range of dates, without hard-coding the any variables.
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+pipeline <- function(params){
+
+  query <-"
+    SELECT count(*) as n_hits 
+    FROM user_hits 
+    WHERE date(date_time) BETWEEN date('{{{date_low}}}') AND date('{{{date_high}}}')
+  ;"
+
+  whisker.render(query,params)
+
+}
+
+run_pipeline_dbi(pipeline,
+  "SELECT date('now', '-5 days') as date_low, date('now') as date_high",
+  con
+)
+
+dbDisconnect(con)
+
+```
+
+
+## Dynamically generated queries via JSON
+If list is defined, convert the JSON string to an object and iterate through name1,name2 pairs.
+This dynamically generates a query of variable length, based on the JSON object.
+In this example, we create a trivial JSON object manually.  We'll use a dynamically generated JSON object in the next example.
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+pipeline <- function(params){
+
+  query <- "SELECT {{{value}}} as dollars_won,
+    {{#list}}
+    '{{name1}}' as {{name2}},
+    {{/list}}
+    '{{{field}}}' as field
+  ;"
+
+  whisker.render(query,params)
+
+}
+
+
+run_pipeline_dbi(
+  pipeline,
+  "SELECT value,
+    field,
+    list
+  FROM (
+    SELECT 1000 as value,
+      'word' as field,
+      '[{\"name1\":\"foo1\", \"name2\":\"bar1\"},{\"name1\":\"foo2\", \"name2\":\"bar2\"}]' as list
+  )
+  UNION ALL
+  SELECT 2000 as value,
+    'word' as field,
+    '[{\"name1\":\"foo1\", \"name2\":\"bar1\"},{\"name1\":\"foo2\", \"name2\":\"bar2\"}]' as list
+  ",
+  con
+)
+
+
+dbDisconnect(con)
+
+```
+
+
+## Feature Generation Query
+For the top 5 represented horsepowers in the mtcars dataset, create features for each of those horsepowers for each of the types of cylinders.  For example, we dynamically create features like n_hp_110=4, for cyl=6.
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+dbWriteTable(con, "mtcars", mtcars)
+
+#for each cylinder count, count the number of top 5 hps it has
+pipeline <- function(params){
+  
+  query <- "SELECT
+    {{#list}}
+    SUM(CASE WHEN hp='{{val}}' THEN 1 ELSE 0 END )as n_hp_{{val}},
+  {{/list}}
+    cyl
+    FROM mtcars
+    GROUP BY cyl
+  ;"
+
+
+  dbGetQuery(
+    con,
+    whisker.render(query,params)
+  )
+}
+
+
+#pass the top 5 most common hps as val params
+run_pipeline_dbi(
+  pipeline,
+  '
+  SELECT "[" || GROUP_CONCAT("{ ""val"": """ || hp ||  """ }") || "]" AS list
+  FROM (
+    SELECT 
+      CAST(hp as INTEGER) as HP,
+      count(hp) as cnt
+    FROM mtcars 
+    GROUP BY hp
+    ORDER BY cnt DESC
+    LIMIT 5
+  )
+  ',
+  con
+)
+
+
+dbDisconnect(con)
+
+```
+
+

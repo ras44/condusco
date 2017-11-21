@@ -1,0 +1,25 @@
+Package: condusco
+Type: Package
+Title: Query-Driven Pipeline Execution and Query Templates
+Version: 0.1.0
+Author: Roland Stevenson
+Maintainer: Roland Stevenson <roland@rmg-services.com>
+Description: Runs a function iteratively over each row of either a dataframe 
+    or the results of a query.  Use the 'BigQuery' and 'DBI' wrappers to 
+    iteratively pass each row of query results to a function.  If a field 
+    contains a 'JSON' string, it will be converted to an object.  This is 
+    helpful for queries that return 'JSON' strings that represent objects.  
+    These fields can then be treated as objects by the pipeline.
+License: GPL-3
+URL: https://github.com/ras44/condusco
+BugReports: https://github.com/ras44/condusco/issues
+Encoding: UTF-8
+LazyData: true
+Suggests: knitr, rmarkdown, whisker, testthat, RSQLite
+VignetteBuilder: knitr
+Depends: R (>= 3.3.2),
+  jsonlite,
+  assertthat,
+  bigrquery,
+  DBI
+RoxygenNote: 6.0.1.9000
