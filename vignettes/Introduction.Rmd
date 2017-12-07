@@ -11,6 +11,8 @@ vignette: >
 
 ## A Story
 
+For experienced data scientists with a technical background, feel free to skim before starting at Whizbang 3.0.
+
 ### Whizbang 1.0: A prototype
 Arnold is a data-scientist at Ploopli.  He develops a new program called Whizbang 1.0 that queries and creates a variety of tables in a database.  The Whizbang data pipeline has two steps:
 
@@ -42,15 +44,16 @@ ploopli_run_database_query(query)
 
 After testing his prototype, Arnold is fired up. Whizbang is going to take the world by storm.  Arnold shares Whizbang with his boss, who takes a sip of coffee, looks at the code, and sprays coffee all over his VT-100 out of sheer amazement.  His boss recommends Arnold work with Barb immediately to develop Whizbang 2.0.
 
-*Problem*
 
+### Whizbang 2.0: Templated queries
 Barb takes a look at the code and comes back almost immediately.  She can't run the code because it has Arnold's dataset hard-coded in all of the queries.
 
 It's clear that if Arnold and Barb are to collaborate on the development of Whizbang 2.0, they will need to separate parameters like tablenames and variables from the logic of their queries.
 
-Arnold and Barb put their heads together and think "Wouldn't it be nice if we could each define our own configuration and then dynamically generate the queries when we run Whizbang?".
+Arnold and Barb put their heads together and think 
 
-### Whizbang 2.0: Templated queries
+> "Wouldn't it be nice if we could each define our own configuration and then dynamically generate the queries when we run Whizbang?".
+
 Arnold discovers the mustache templating language and realizes that he can use the [whisker R package](https://github.com/edwindj/whisker) to template the queries in Whizbang.  Now Whizbang contains templated queries like:
 
 **arnold_config.r**
@@ -91,14 +94,17 @@ When Arnold and Barb now run Whizbang 2.0, their tables happily live in their ow
 
 > Code that separates configuration from logic is easy to share and means the code only changes if its logic changes.
 
-Whizbang 2.0 is successfully deployed and starts making waves around the globe.  Orders for VT-100s rise.  Euphoric with the success of Whizbang 2.0, Arnold's boss calls a meeting.
+
+### Whizbang 3.0: Query-driven pipelines
+Whizbang 2.0 is successfully deployed and starts making waves around the globe.  Orders for VT-100s rise as bosses everywhere spray coffee in disbelief.  Euphoric with the success of Whizbang 2.0, Arnold's boss calls a meeting:
 
 Multiple teams at Ploopli need Whizbang to create daily random samples of users.  Further, users are now assigned a region code.  The number of region codes is currently 3, but will grow as Ploopli grows.  Whizbang needs to create separate daily sample tables for each region.
 
-Arnold and Barb put their heads together and think "Wouldn't it be nice if we could get region codes dynamically via a database query and then dynamically run Whizbang for each region on a particular date?".
+Arnold and Barb put their heads together and think
 
-### Whizbang 3.0: Query-driven function calls
-Barb finds the [condusco R package](https://github.com/ras44/condusco).  With condusco, she creates a pipeline called `create_daily_region_sample` and repeatedly runs it for each of the regions she gets from a query.
+> "Wouldn't it be nice if we could get region codes dynamically via a database query and then dynamically run Whizbang for each region on a particular date?".
+
+Barb finds the [condusco R package](https://github.com/ras44/condusco).  With condusco, she creates a pipeline called `create_daily_region_user_sample` and repeatedly runs it for each of the regions she gets from a query.
 
 **whizbang/create_daily_region_user_sample.r**
 ```r
@@ -135,7 +141,7 @@ run_pipeline_dbi(
 )
 ```
 
-The 'run_pipeline' function runs the query provided to it, called the **invocation query**, and receives a result.  For each row in the result, it calls the pipeline and passes that row to the pipeline as a dataframe.
+The `run_pipeline_dbi` function runs the query provided to it, called the **invocation query**, and receives a result.  For each row in the result, it calls the `create_daily_region_user_sample` pipeline and passes that row to the pipeline as a dataframe.
 
 When Arnold and Barb are ready to put the pipeline into production, they don't have to change the pipeline definition.  They just change their invocation query, changing the dataset_id to 'prod'.  When new regions are added, the pipeline automatically creates new tables for those regions.
 
