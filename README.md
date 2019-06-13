@@ -1,4 +1,6 @@
 # condusco
+[![](https://www.r-pkg.org/badges/version/condusco?color=orange)](https://cran.r-project.org/package=condusco)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/condusco?color=green)](https://cran.r-project.org/package=condusco)
 
 ## Overview
 
