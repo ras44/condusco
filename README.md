@@ -163,7 +163,7 @@ options("httr_oauth_cache" = "~/.httr-oauth")
 options(httr_oob_default=TRUE)
 
 #Run the below query to authenticate and write credentials to .httr-oauth file
-query_exec("SELECT 'foo' as bar",project=project);
+bq_perform_query("SELECT 'foo' as bar",project);
 
 ```
 
@@ -185,8 +185,8 @@ pipeline <- function(params){
   LIMIT {{limit_size}}
   ;"
 
-  res <- query_exec(whisker.render(query,params),
-                    project=project,
+  res <- bq_perform_query(whisker.render(query,params),
+                    project,
                     use_legacy_sql = FALSE
   );
   
@@ -222,9 +222,9 @@ pipeline <- function(params){
     GROUP BY repo_name
   ;"
 
-  res <- query_exec(
+  res <- bq_perform_query(
     whisker.render(query,params),
-    project=project,
+    project,
     use_legacy_sql = FALSE
   );
   

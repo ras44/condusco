@@ -13,7 +13,7 @@ run_pipeline_gbq(pipeline, query, project, ...)
 
 \item{project}{The Google BigQuery project to bill}
 
-\item{...}{Additional arguments passed to query_exec()}
+\item{...}{Additional arguments passed to `bq_perform_query()`}
 }
 \description{
 A wrapper for running pipelines with a BigQuery invocation query
@@ -31,7 +31,7 @@ options("httr_oauth_cache" = "~/.httr-oauth")
 options(httr_oob_default=TRUE)
 
 #Run the below query to authenticate and write credentials to .httr-oauth file
-query_exec("SELECT 'foo' as bar",project=project);
+bq_perform_query("SELECT 'foo' as bar",project);
 
 pipeline <- function(params){
 
@@ -45,9 +45,9 @@ pipeline <- function(params){
     GROUP BY repo_name
   ;"
 
-  res <- query_exec(
+  res <- bq_perform_query(
     whisker.render(query,params),
-    project=project,
+    project,
     use_legacy_sql = FALSE
   );
 
@@ -57,8 +57,8 @@ pipeline <- function(params){
 run_pipeline_gbq(pipeline, "
   SELECT CONCAT('[',
   STRING_AGG(
-    CONCAT('{\\"name\\":\\"',name,'\\",'
-      ,'\\"name_clean\\":\\"', REGEXP_REPLACE(name, r'[^[:alpha:]]', ''),'\\"}'
+    CONCAT('{\"name\":\"',name,'\",'
+      ,'\"name_clean\":\"', REGEXP_REPLACE(name, r'[^[:alpha:]]', ''),'\"}'
     )
   ),
   ']') as list
