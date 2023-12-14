@@ -48,7 +48,7 @@ run_pipeline <- function(pipeline, parameters){
 #' @param pipeline User-provided function with one argument, one row of query results
 #' @param query A query to execute in Google BigQuery
 #' @param project The Google BigQuery project to bill
-#' @param ... Additional arguments passed to query_exec()
+#' @param ... Additional arguments passed to `bq_perform_query()`
 #'
 #' @import bigrquery
 #'
@@ -65,7 +65,7 @@ run_pipeline <- function(pipeline, parameters){
 #' options(httr_oob_default=TRUE)
 #'
 #' #Run the below query to authenticate and write credentials to .httr-oauth file
-#' query_exec("SELECT 'foo' as bar",project=project);
+#' bq_perform_query("SELECT 'foo' as bar",project);
 #'
 #' pipeline <- function(params){
 #'
@@ -79,9 +79,9 @@ run_pipeline <- function(pipeline, parameters){
 #'     GROUP BY repo_name
 #'   ;"
 #'
-#'   res <- query_exec(
+#'   res <- bq_perform_query(
 #'     whisker.render(query,params),
-#'     project=project,
+#'     project,
 #'     use_legacy_sql = FALSE
 #'   );
 #'
@@ -113,7 +113,7 @@ run_pipeline <- function(pipeline, parameters){
 run_pipeline_gbq <- function(pipeline, query, project, ... ){
 
   #run the query to generate the intitialization table
-  parameters <- query_exec(query, project=project, ...)
+  parameters <- bq_perform_query(query, project, ...)
 
   run_pipeline(pipeline, parameters)
 
